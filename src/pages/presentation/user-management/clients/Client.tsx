@@ -46,7 +46,7 @@ const Client = () => {
 		.map((i) => USERS[i]);
 	return (
 		<PageWrapper title='Users Page'>
-			<PresentaionPagesSubHeader showSubHeaderRight title='Find Employee Payslip' />
+			<PresentaionPagesSubHeader showSubHeaderRight title='iNeuron Intelligence Users' />
 			<Page container='fluid'>
 				<div className='row row-cols-xxl-3 row-cols-lg-3 row-cols-md-2'>
 					{searchUsers.map((user) => (
