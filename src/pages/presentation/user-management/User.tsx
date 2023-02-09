@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import classNames from 'classnames';
 import { useFormik } from 'formik';
 import Icon from '../../../components/icon/Icon';
 import Page from '../../../layout/Page/Page';
 import PageWrapper from '../../../layout/PageWrapper/PageWrapper';
 import Card, { CardBody } from '../../../components/bootstrap/Card';
-import USERS from '../../../common/data/userDummyData';
 import Badge from '../../../components/bootstrap/Badge';
 import Button from '../../../components/bootstrap/Button';
 import Dropdown, {
@@ -15,42 +14,144 @@ import Dropdown, {
 } from '../../../components/bootstrap/Dropdown';
 import useTourStep from '../../../hooks/useTourStep';
 import PresentaionPagesSubHeader from '../../../widgets/PresentaionPagesSubHeader';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
+import UserImage1 from '../../../assets/img/wanna/wanna1.png';
+import UserImage2 from '../../../assets/img/wanna/wanna2.png';
+import UserImage3 from '../../../assets/img/wanna/wanna3.png';
+import UserImage4 from '../../../assets/img/wanna/wanna4.png';
+import UserImage5 from '../../../assets/img/wanna/wanna5.png';
+import UserImage6 from '../../../assets/img/wanna/wanna6.png';
+import Modal, { ModalBody, ModalFooter, ModalHeader } from '../../../components/bootstrap/Modal';
+import FormGroup from '../../../components/bootstrap/forms/FormGroup';
+import { OffCanvasTitle } from '../../../components/bootstrap/OffCanvas';
+import Input from '../../../components/bootstrap/forms/Input';
+
+enum ModalType {
+	NEW = 'new',
+	EDIT = 'edit',
+}
+
+type TModalType = ModalType.NEW | ModalType.EDIT;
 
 const User = () => {
+	const [showUpsertUserModal, setShowUpsertUserModal] = useState(false);
+	const [modalType, setModalType] = useState<TModalType>(ModalType.NEW);
+	const userImages = [UserImage1, UserImage2, UserImage3, UserImage4, UserImage5, UserImage6];
+	const fetchAllUsers = useCallback(async () => {
+		const data = await axios.get('https://blue-journalist-bbrpv.ineuron.app:4000/users');
+		console.log(data);
+		return data;
+	}, []);
+	const { refetch, data: result } = useQuery(['todos'], fetchAllUsers);
 	useTourStep(18);
+
 	const formik = useFormik({
 		initialValues: {
-			available: false,
-			searchInput: '',
-			services: [],
+			firstName: '',
+			lastName: '',
+			phoneNumber: 0,
+			age: 0,
 		},
-		onSubmit: () => {
-			// setFilterMenu(false);
-			// alert(JSON.stringify(values, null, 2));
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		onSubmit: async (values) => {
+			const reqBody = {
+				firstName: formik.values.firstName,
+				lastName: formik.values.lastName,
+				phoneNumber: formik.values.phoneNumber,
+				age: formik.values.age,
+			};
+			if (modalType === ModalType.NEW) {
+				await axios.post(
+					'https://blue-journalist-bbrpv.ineuron.app:4000/user/create',
+					reqBody,
+				);
+			} else {
+				await axios.patch(
+					'https://blue-journalist-bbrpv.ineuron.app:4000/user/create',
+					reqBody,
+				);
+			}
+			refetch();
+			setModalType(ModalType.NEW);
+			setShowUpsertUserModal(false);
 		},
 	});
 
-	const searchUsers = Object.keys(USERS)
-		.filter(
-			(key) =>
-				USERS[key].username
-					.toLowerCase()
-					.includes(formik.values.searchInput.toLowerCase()) ||
-				USERS[key].name.toLowerCase().includes(formik.values.searchInput.toLowerCase()) ||
-				USERS[key].surname
-					.toLowerCase()
-					.includes(formik.values.searchInput.toLowerCase()) ||
-				USERS[key].position.toLowerCase().includes(formik.values.searchInput.toLowerCase()),
-		)
-		.filter((key2) => (formik.values.available ? USERS[key2].isOnline : key2))
-		.map((i) => USERS[i]);
+	const addNewModal = useCallback(
+		() => (
+			<Modal
+				setIsOpen={setShowUpsertUserModal}
+				isOpen={showUpsertUserModal}
+				titleId='upcomingEdit'
+				size='sm'>
+				<ModalHeader setIsOpen={setShowUpsertUserModal}>
+					<OffCanvasTitle id='upcomingEdit'>
+						{modalType === ModalType.NEW ? 'Create New User' : 'Edit User'}
+					</OffCanvasTitle>
+				</ModalHeader>
+				<ModalBody>
+					<div className='row g-4'>
+						<div className='col-12'>
+							<FormGroup id='firstName' label='First Name' isFloating>
+								<Input
+									placeholder='First Name'
+									value={formik.values.firstName}
+									onChange={formik.handleChange}
+								/>
+							</FormGroup>
+						</div>
+						<div className='col-12'>
+							<FormGroup id='lastName' label='Last Name' isFloating>
+								<Input
+									placeholder='Last Name'
+									value={formik.values.lastName}
+									onChange={formik.handleChange}
+								/>
+							</FormGroup>
+						</div>
+						<div className='col-12'>
+							<FormGroup id='phoneNumber' defaultChecked label='Phone Number'>
+								<Input
+									placeholder='Phone Number'
+									value={formik.values.phoneNumber}
+									onChange={formik.handleChange}
+								/>
+							</FormGroup>
+						</div>
+						<div className='col-12'>
+							<FormGroup id='age' defaultChecked label='Age'>
+								<Input
+									placeholder='Age'
+									value={formik.values.age}
+									onChange={formik.handleChange}
+								/>
+							</FormGroup>
+						</div>
+					</div>
+				</ModalBody>
+				<ModalFooter className='bg-transparent'>
+					<Button color='info' className='w-100' onClick={formik.handleSubmit}>
+						Save
+					</Button>
+				</ModalFooter>
+			</Modal>
+		),
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[modalType, showUpsertUserModal],
+	);
+
 	return (
 		<PageWrapper title='Users Page'>
-			<PresentaionPagesSubHeader showSubHeaderRight title='Find Employee Payslip' />
+			<PresentaionPagesSubHeader
+				setAddNewModalVisible={setShowUpsertUserModal}
+				showSubHeaderRight
+				title='iNeuron Intelligence Users'
+			/>
 			<Page container='fluid'>
 				<div className='row row-cols-xxl-3 row-cols-lg-3 row-cols-md-2'>
-					{searchUsers.map((user) => (
-						<div key={user.username} className='col'>
+					{result?.data?.data?.map((user: any, index: any) => (
+						<div key={user.firstName + index} className='col'>
 							<Card>
 								<CardBody>
 									<div className='row g-3'>
@@ -69,7 +170,7 @@ const User = () => {
 																'shadow',
 															)}>
 															<img
-																src={user.src}
+																src={userImages[index]}
 																alt={user.name}
 																width={100}
 															/>
@@ -90,7 +191,7 @@ const User = () => {
 														<div className='col'>
 															<div className='d-flex align-items-center'>
 																<div className='fw-bold fs-5 me-2'>
-																	{`${user.name} ${user.surname}`}
+																	{`${user.firstName} ${user.lastName}`}
 																</div>
 																<small className='border border-success border-2 text-success fw-bold px-2 py-1 rounded-1'>
 																	{user.position}
@@ -98,7 +199,7 @@ const User = () => {
 															</div>
 
 															<div className='text-muted'>
-																@{user.username}
+																@{user.firstName}
 															</div>
 														</div>
 														<div className='col-auto'>
@@ -113,7 +214,16 @@ const User = () => {
 																	/>
 																</DropdownToggle>
 																<DropdownMenu>
-																	<DropdownItem className='p-2'>
+																	<DropdownItem
+																		onClick={() => {
+																			setModalType(
+																				ModalType.EDIT,
+																			);
+																			setShowUpsertUserModal(
+																				true,
+																			);
+																		}}
+																		className='p-2'>
 																		<div>
 																			<Icon
 																				size='lg'
@@ -131,40 +241,25 @@ const User = () => {
 																			<span>Delete</span>
 																		</div>
 																	</DropdownItem>
-																	<DropdownItem className='p-2'>
-																		<div>
-																			<Icon
-																				size='lg'
-																				icon='settings'
-																			/>
-																			<span>
-																				Reset Password
-																			</span>
-																		</div>
-																	</DropdownItem>
 																</DropdownMenu>
 															</Dropdown>
 														</div>
 													</div>
-													{!!user?.services && (
+													{!!user?.phoneNumber && (
 														<div className='row g-2 mt-3'>
-															{user?.services.map((service) => (
-																<div
-																	key={service.name}
-																	className='col-auto'>
-																	<Badge
-																		isLight
-																		color={service.color}
-																		className='px-3 py-2'>
-																		<Icon
-																			icon={service.icon}
-																			size='lg'
-																			className='me-1'
-																		/>
-																		{service.name}
-																	</Badge>
-																</div>
-															))}
+															<div className='col-auto'>
+																<Badge
+																	isLight
+																	color='primary'
+																	className='px-3 py-2'>
+																	<Icon
+																		icon='ContactPhone'
+																		size='lg'
+																		className='me-1'
+																	/>
+																	{user?.phoneNumber}
+																</Badge>
+															</div>
 														</div>
 													)}
 												</div>
@@ -177,6 +272,7 @@ const User = () => {
 					))}
 				</div>
 			</Page>
+			{addNewModal()}
 		</PageWrapper>
 	);
 };
