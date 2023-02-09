@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import React, { FC, useState } from 'react';
 import classNames from 'classnames';
 import TAGS, { getTagsDataWithId } from '../../common/data/boardTagsData';
-import CHATS from '../../common/data/chatDummyData';
 import USERS, { getUserDataWithUsername } from '../../common/data/userDummyData';
 import Avatar from '../Avatar';
 import Badge from '../bootstrap/Badge';
@@ -329,19 +328,6 @@ const BoardCard: FC<IBoardCardProps> = ({ card, groupId, data, setData }) => {
 										<CardTitle>Comments</CardTitle>
 									</CardLabel>
 								</CardHeader>
-								<CardBody>
-									<Chat>
-										{CHATS.CHLOE_VS_JOHN.map((msg) => (
-											<ChatGroup
-												key={msg.id}
-												messages={msg.messages}
-												// @ts-ignore
-												user={msg.user}
-												isReply={msg.isReply}
-											/>
-										))}
-									</Chat>
-								</CardBody>
 								<CardFooter className='d-block'>
 									<InputGroup>
 										<Textarea />

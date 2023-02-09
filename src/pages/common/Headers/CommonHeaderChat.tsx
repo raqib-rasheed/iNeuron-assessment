@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import OffCanvas, { OffCanvasBody, OffCanvasHeader } from '../../../components/bootstrap/OffCanvas';
-import Chat, { ChatGroup, ChatHeader } from '../../../components/Chat';
+import OffCanvas, { OffCanvasHeader } from '../../../components/bootstrap/OffCanvas';
+import { ChatHeader } from '../../../components/Chat';
 import InputGroup from '../../../components/bootstrap/forms/InputGroup';
 import Textarea from '../../../components/bootstrap/forms/Textarea';
 import Button from '../../../components/bootstrap/Button';
 import USERS from '../../../common/data/userDummyData';
 import Avatar from '../../../components/Avatar';
 import showNotification from '../../../components/extras/showNotification';
-import CHATS from '../../../common/data/chatDummyData';
 
 const CommonHeaderChat = () => {
 	const [state, setState] = useState<boolean>(false);
@@ -86,18 +85,6 @@ const CommonHeaderChat = () => {
 				<OffCanvasHeader setOpen={setState} className='fs-5'>
 					<ChatHeader to={USERS.CHLOE.name} />
 				</OffCanvasHeader>
-				<OffCanvasBody>
-					<Chat>
-						{CHATS.CHLOE_VS_JOHN.map((msg) => (
-							<ChatGroup
-								key={msg.id}
-								messages={msg.messages}
-								user={msg.user}
-								isReply={msg.isReply}
-							/>
-						))}
-					</Chat>
-				</OffCanvasBody>
 				<div className='chat-send-message p-3'>
 					<InputGroup>
 						<Textarea />
